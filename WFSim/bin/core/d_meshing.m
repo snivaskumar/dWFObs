@@ -431,6 +431,14 @@ for i = 1:tur
     Wp{i}.site.actual_u_Inf            = u_Inf;
     % Wp{i}.site.v_Inf                   = 5;
     Wp{i}.site.actual_v_Inf            = v_Inf;
+    
+    Wp{i}.mesh.xxline = xline;
+    Wp{i}.mesh.yyline = yline;
+    
+    Wp{i}.mesh.NNxb = Nxb;
+    Wp{i}.mesh.NNxe = Nxe;
+    Wp{i}.mesh.NNyb = Nyb;
+    Wp{i}.mesh.NNye = Nye;
 
 end
 %% Construct mu if no turbulence

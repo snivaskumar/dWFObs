@@ -1,101 +1,65 @@
 % Define spatial varying mixing-length parameter
 % Should work for wd = 270deg
-if N == 1
-    if sum(ismember(ID,upstreamTurbines)) == 0
-        mixing_length    = lmu*0.5*Drotor*ones(Nx,Ny);
-    else
-        x                = [zeros(1,xline(1)+n) linspace(0,lmu,Nx-xline(1)-n)]';
-        y                = [zeros(1,yline{1}(1)-1) ones(1,length(yline{1})) zeros(1,Ny-yline{1}(end))] ;
-        mixing_length    = (repmat(x,1,Ny).*repmat(y,Nx,1))*0.5*Drotor;
-    end
-elseif N == 2
-    if sum(ismember(ID,upstreamTurbines)) == 0
-        mixing_length    = lmu*0.5*Drotor*ones(Nx,Ny);
-    elseif sum(ismember(ID,upstreamTurbines)) == 1     % 2 turbine case
-        x                = [zeros(1,xline(1)+n) linspace(0,lmu,xline(1+1)-xline(1)-4*n)]';
-        x                = [x;zeros(4*n,1);linspace(0,lmu,Nx-xline(2)-n)'];
-        y                = [zeros(1,yline{1}(1)-1) ones(1,length(yline{1})) zeros(1,Ny-yline{1}(end))] ;
-        mixing_length    = (repmat(x,1,Ny).*repmat(y,Nx,1))*0.5*Drotor;
-    elseif (sum(ismember(ID,upstreamTurbines)) == 2) 
-        xline            = sort(unique(xline));
-        x                = [zeros(1,xline(1)+n) linspace(0,lmu,Nx-xline(1)-n)]';
-        y                = [zeros(1,yline{1}(1)-1) ones(1,length(yline{1})) zeros(1,yline{2}(1)-yline{1}(end)-1)...
-                         ones(1,length(yline{2})) zeros(1,Ny-yline{2}(end))] ;
-        mixing_length    = (repmat(x,1,Ny).*repmat(y,Nx,1))*0.5*Drotor;
-    end
-elseif N == 3
-    if sum(ismember(ID,upstreamTurbines)) == 0
-        mixing_length    = lmu*0.5*Drotor*ones(Nx,Ny);
-    elseif sum(ismember(ID,upstreamTurbines)) == 1     % 3 turbine case
-        disp('Sub-system will not be this big.')
-    else
-        xline            = sort(unique(xline));
-        x                = [zeros(1,xline(1)+n) linspace(0,lmu,Nx-xline(1)-n)]';
-        y                = [zeros(1,yline{1}(1)-1) ones(1,length(yline{1})) zeros(1,yline{2}(1)-yline{1}(end)-1) ...
-                        ones(1,length(yline{2})) zeros(1,yline{3}(1)-yline{2}(end)-1) ...
-                        ones(1,length(yline{3})) zeros(1,Ny-yline{3}(end))];
-        mixing_length    = (repmat(x,1,Ny).*repmat(y,Nx,1))*0.5*Drotor; 
-    end
-elseif N == 4
-    if sum(ismember(ID,upstreamTurbines)) == 0
-        mixing_length    = lmu*0.5*Drotor*ones(Nx,Ny);
-    else % (if sum(ismember(ID,upstreamTurbines)) == 2)
-        xline            = sort(unique(xline));
-        x                = [zeros(1,xline(1)+n) linspace(0,lmu,xline(1+1)-xline(1)-4*n)]';
-        x                = [x;zeros(4*n,1);linspace(0,lmu,Nx-xline(2)-n)'];
-        y                = [zeros(1,yline{1}(1)-1) ones(1,length(yline{1})) zeros(1,yline{2}(1)-yline{1}(end)-1)...
-                         ones(1,length(yline{2})) zeros(1,Ny-yline{2}(end))] ;
-        mixing_length    = (repmat(x,1,Ny).*repmat(y,Nx,1))*0.5*Drotor;
-    end
-elseif N == 6
-    if sum(ismember(ID,upstreamTurbines)) == 0
-        mixing_length    = lmu*0.5*Drotor*ones(Nx,Ny);
-    else
-        xline            = sort(unique(xline));
-        x                = [zeros(1,xline(1)+n) linspace(0,lmu,xline(2)-xline(1)-m)]';
-        x                = [x;zeros(m,1);linspace(0,lmu,xline(3)-xline(2)-m)'];
-        x                = [x;zeros(m,1);linspace(0,lmu,Nx-xline(3)-n)'];
-        y                = [zeros(1,yline{1}(1)-1) ones(1,length(yline{1})) zeros(1,yline{2}(1)-yline{1}(end)-1)...
-                             ones(1,length(yline{2})) zeros(1,Ny-yline{2}(end))] ;
-        mixing_length    = (repmat(x,1,Ny).*repmat(y,Nx,1))*0.5*Drotor;
-    end
-elseif N == 9
-    xline            = sort(unique(xline));
-    x                = [zeros(1,xline(1)+n) linspace(0,lmu,xline(2)-xline(1)-m)]';
-    x                = [x;zeros(m,1);linspace(0,lmu,xline(3)-xline(2)-m)'];
-    x                = [x;zeros(m,1);linspace(0,lmu,Nx-xline(3)-n)'];
-    y                = [zeros(1,yline{3}(1)-1) ones(1,length(yline{3})) zeros(1,yline{5}(1)-yline{3}(end)-1) ...
-                        ones(1,length(yline{5})) zeros(1,yline{7}(1)-yline{5}(end)-1) ...
-                        ones(1,length(yline{7})) zeros(1,Ny-yline{7}(end))];
-    mixing_length    = (repmat(x,1,Ny).*repmat(y,Nx,1))*0.5*Drotor;
-else
-    mixing_length    = lmu*0.5*Drotor*ones(Nx,Ny);
-end
-% if N==1
-%     x                = [zeros(1,xline(1)+n) linspace(0,lmu,Nx-xline(1)-n)]';
-%     y                = [zeros(1,yline{1}(1)-1) ones(1,length(yline{1})) zeros(1,Ny-yline{1}(end))] ;
-%     mixing_length    = (repmat(x,1,Ny).*repmat(y,Nx,1))*0.5*Drotor;
-% elseif N==2
-%     x                = [zeros(1,xline(1)+n) linspace(0,lmu,xline(1+1)-xline(1)-4*n)]';
-%     x                = [x;zeros(4*n,1);linspace(0,lmu,Nx-xline(2)-n)'];
-%     y                = [zeros(1,yline{1}(1)-1) ones(1,length(yline{1})) zeros(1,Ny-yline{1}(end))] ;
-%     mixing_length    = (repmat(x,1,Ny).*repmat(y,Nx,1))*0.5*Drotor;
-% elseif N==3
-%     xline            = sort(unique(xline));
-%     x                = [zeros(1,xline(1)+n) linspace(0,lmu,xline(2)-xline(1)-m)]';
-%     x                = [x;zeros(m,1);linspace(0,lmu,xline(3)-xline(2)-m)'];
-%     x                = [x;zeros(m,1);linspace(0,lmu,Nx-xline(3)-n)'];
-%     y                = [zeros(1,yline{1}(1)-1) ones(1,length(yline{1})) zeros(1,Ny-yline{1}(end))] ;
-%     mixing_length    = (repmat(x,1,Ny).*repmat(y,Nx,1))*0.5*Drotor;
-% elseif N==6
-%     xline            = sort(unique(xline));
-%     x                = [zeros(1,xline(1)+n) linspace(0,lmu,xline(2)-xline(1)-m)]';
-%     x                = [x;zeros(m,1);linspace(0,lmu,xline(3)-xline(2)-m)'];
-%     x                = [x;zeros(m,1);linspace(0,lmu,Nx-xline(3)-n)'];
-%     y                = [zeros(1,yline{1}(1)-1) ones(1,length(yline{1})) zeros(1,yline{2}(1)-yline{1}(end)-1)...
+% if N == 1
+%     if sum(ismember(ID,upstreamTurbines)) == 0
+%         mixing_length    = lmu*0.5*Drotor*ones(Nx,Ny);
+%     else
+%         x                = [zeros(1,xline(1)+n) linspace(0,lmu,Nx-xline(1)-n)]';
+%         y                = [zeros(1,yline{1}(1)-1) ones(1,length(yline{1})) zeros(1,Ny-yline{1}(end))] ;
+%         mixing_length    = (repmat(x,1,Ny).*repmat(y,Nx,1))*0.5*Drotor;
+%     end
+% elseif N == 2
+%     if sum(ismember(ID,upstreamTurbines)) == 0
+%         mixing_length    = lmu*0.5*Drotor*ones(Nx,Ny);
+%     elseif sum(ismember(ID,upstreamTurbines)) == 1     % 2 turbine case
+%         x                = [zeros(1,xline(1)+n) linspace(0,lmu,xline(2)-xline(1)-4*n)]';
+%         x                = [x;zeros(4*n,1);linspace(0,lmu,Nx-xline(2)-n)'];
+%         y                = [zeros(1,yline{1}(1)-1) ones(1,length(yline{1})) zeros(1,Ny-yline{1}(end))] ;
+%         mixing_length    = (repmat(x,1,Ny).*repmat(y,Nx,1))*0.5*Drotor;
+%     elseif (sum(ismember(ID,upstreamTurbines)) == 2) 
+%         xline            = sort(unique(xline));
+%         x                = [zeros(1,xline(1)+n) linspace(0,lmu,Nx-xline(1)-n)]';
+%         y                = [zeros(1,yline{1}(1)-1) ones(1,length(yline{1})) zeros(1,yline{2}(1)-yline{1}(end)-1)...
 %                          ones(1,length(yline{2})) zeros(1,Ny-yline{2}(end))] ;
-%     mixing_length    = (repmat(x,1,Ny).*repmat(y,Nx,1))*0.5*Drotor;
-% elseif N==9
+%         mixing_length    = (repmat(x,1,Ny).*repmat(y,Nx,1))*0.5*Drotor;
+%     end
+% elseif N == 3
+%     if sum(ismember(ID,upstreamTurbines)) == 0
+%         mixing_length    = lmu*0.5*Drotor*ones(Nx,Ny);
+%     elseif sum(ismember(ID,upstreamTurbines)) == 1     % 3 turbine case
+%         disp('Sub-system will not be this big.')
+%     else
+%         xline            = sort(unique(xline));
+%         x                = [zeros(1,xline(1)+n) linspace(0,lmu,Nx-xline(1)-n)]';
+%         y                = [zeros(1,yline{1}(1)-1) ones(1,length(yline{1})) zeros(1,yline{2}(1)-yline{1}(end)-1) ...
+%                         ones(1,length(yline{2})) zeros(1,yline{3}(1)-yline{2}(end)-1) ...
+%                         ones(1,length(yline{3})) zeros(1,Ny-yline{3}(end))];
+%         mixing_length    = (repmat(x,1,Ny).*repmat(y,Nx,1))*0.5*Drotor; 
+%     end
+% elseif N == 4
+%     if sum(ismember(ID,upstreamTurbines)) == 0
+%         mixing_length    = lmu*0.5*Drotor*ones(Nx,Ny);
+%     else % (if sum(ismember(ID,upstreamTurbines)) == 2)
+%         xline            = sort(unique(xline));
+%         x                = [zeros(1,xline(1)+n) linspace(0,lmu,xline(1+1)-xline(1)-4*n)]';
+%         x                = [x;zeros(4*n,1);linspace(0,lmu,Nx-xline(2)-n)'];
+%         y                = [zeros(1,yline{1}(1)-1) ones(1,length(yline{1})) zeros(1,yline{2}(1)-yline{1}(end)-1)...
+%                          ones(1,length(yline{2})) zeros(1,Ny-yline{2}(end))] ;
+%         mixing_length    = (repmat(x,1,Ny).*repmat(y,Nx,1))*0.5*Drotor;
+%     end
+% elseif N == 6
+%     if sum(ismember(ID,upstreamTurbines)) == 0
+%         mixing_length    = lmu*0.5*Drotor*ones(Nx,Ny);
+%     else
+%         xline            = sort(unique(xline));
+%         x                = [zeros(1,xline(1)+n) linspace(0,lmu,xline(2)-xline(1)-m)]';
+%         x                = [x;zeros(m,1);linspace(0,lmu,xline(3)-xline(2)-m)'];
+%         x                = [x;zeros(m,1);linspace(0,lmu,Nx-xline(3)-n)'];
+%         y                = [zeros(1,yline{1}(1)-1) ones(1,length(yline{1})) zeros(1,yline{2}(1)-yline{1}(end)-1)...
+%                              ones(1,length(yline{2})) zeros(1,Ny-yline{2}(end))] ;
+%         mixing_length    = (repmat(x,1,Ny).*repmat(y,Nx,1))*0.5*Drotor;
+%     end
+% elseif N == 9
 %     xline            = sort(unique(xline));
 %     x                = [zeros(1,xline(1)+n) linspace(0,lmu,xline(2)-xline(1)-m)]';
 %     x                = [x;zeros(m,1);linspace(0,lmu,xline(3)-xline(2)-m)'];
@@ -107,8 +71,64 @@ end
 % else
 %     mixing_length    = lmu*0.5*Drotor*ones(Nx,Ny);
 % end
-%     %clear mixing_length 
-%     %mixing_length    = 0.5*0.5*Drotor*ones(Nx,Ny);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Mixing Length matrix for the subsystems are created 
+% by creating Mixing Length matrix for the entire mesh 
+% & cropping the part for the subsystem by using the spatial co-ordinates
+tur     = Wp.tur;
+NNx     = Wp.actualmesh.Nx;
+NNy     = Wp.actualmesh.Ny;
+NNxb    = cell2mat(Wp.mesh.NNxb);
+NNxe    = cell2mat(Wp.mesh.NNxe);
+NNyb    = cell2mat(Wp.mesh.NNyb);
+NNye    = cell2mat(Wp.mesh.NNye);
+xxline  = Wp.mesh.xxline;
+yyline  = Wp.mesh.yyline;
+xxline  = cell2mat(xxline) + (NNxb - 1);
+for i = 1:tur
+    yyline{i} = cell2mat(yyline{i}) + (NNyb(i) - 1);
+end
+if tur==1
+    x                = [zeros(1,xxline(1)+n) linspace(0,lmu,NNx-xxline(1)-n)]';
+    y                = [zeros(1,yyline{1}(1)-1) ones(1,length(yyline{1})) zeros(1,NNy-yyline{1}(end))] ;
+    mixing_length    = (repmat(x,1,NNy).*repmat(y,NNx,1))*0.5*Drotor;
+elseif tur==2
+    x                = [zeros(1,xxline(1)+n) linspace(0,lmu,xxline(1+1)-xxline(1)-4*n)]';
+    x                = [x;zeros(4*n,1);linspace(0,lmu,NNx-xxline(2)-n)'];
+    y                = [zeros(1,yyline{1}(1)-1) ones(1,length(yyline{1})) zeros(1,NNy-yyline{1}(end))] ;
+    mixing_length    = (repmat(x,1,NNy).*repmat(y,NNx,1))*0.5*Drotor;
+elseif tur==3
+    xxline            = sort(unique(xxline));
+    x                = [zeros(1,xxline(1)+n) linspace(0,lmu,xxline(2)-xxline(1)-m)]';
+    x                = [x;zeros(m,1);linspace(0,lmu,xxline(3)-xxline(2)-m)'];
+    x                = [x;zeros(m,1);linspace(0,lmu,NNx-xxline(3)-n)'];
+    y                = [zeros(1,yyline{1}(1)-1) ones(1,length(yyline{1})) zeros(1,NNy-yyline{1}(end))] ;
+    mixing_length    = (repmat(x,1,NNy).*repmat(y,NNx,1))*0.5*Drotor;
+elseif tur==6
+    xxline            = sort(unique(xxline));
+    x                = [zeros(1,xxline(1)+n) linspace(0,lmu,xxline(2)-xxline(1)-m)]';
+    x                = [x;zeros(m,1);linspace(0,lmu,xxline(3)-xxline(2)-m)'];
+    x                = [x;zeros(m,1);linspace(0,lmu,NNx-xxline(3)-n)'];
+    y                = [zeros(1,yyline{1}(1)-1) ones(1,length(yyline{1})) zeros(1,yyline{2}(1)-yyline{1}(end)-1)...
+                         ones(1,length(yyline{2})) zeros(1,NNy-yyline{2}(end))] ;
+    mixing_length    = (repmat(x,1,NNy).*repmat(y,NNx,1))*0.5*Drotor;
+elseif tur==9
+    xxline            = sort(unique(xxline));
+    x                = [zeros(1,xxline(1)+n) linspace(0,lmu,xxline(2)-xxline(1)-m)]';
+    x                = [x;zeros(m,1);linspace(0,lmu,xxline(3)-xxline(2)-m)'];
+    x                = [x;zeros(m,1);linspace(0,lmu,NNx-xxline(3)-n)'];
+    y                = [zeros(1,yyline{3}(1)-1) ones(1,length(yyline{3})) zeros(1,yyline{5}(1)-yyline{3}(end)-1) ...
+                        ones(1,length(yyline{5})) zeros(1,yyline{7}(1)-yyline{5}(end)-1) ...
+                        ones(1,length(yyline{7})) zeros(1,NNy-yyline{7}(end))];
+    mixing_length    = (repmat(x,1,NNy).*repmat(y,NNx,1))*0.5*Drotor;
+else
+    mixing_length    = lmu*0.5*Drotor*ones(NNx,NNy);
+end
+    %clear mixing_length 
+    %mixing_length    = 0.5*0.5*Drotor*ones(NNx,NNy);    
+mixing_length = mixing_length(Nxb:Nxe,Nyb:Nye);    
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if size(mixing_length,1)>1
     H                = fspecial('disk',1); % You need Nx,Nx to keep it symmetric
