@@ -32,6 +32,7 @@ strucObs.measPw      = false; % Use power measurements (SCADA) from turbines in 
 strucObs.measFlow    = true;  % Use flow measurements (LIDAR) in estimates
 strucObs.sensorsPath = 'sensors_apc_9turb_alm'; % measurement setup filename (see '/setup_sensors/sensors_layouts')
     
+scriptOptions.Turbulence = 0
 % Kalman filter settings
 strucObs.filtertype = 'sim'; % Observer types are outlined next
 switch lower(strucObs.filtertype)

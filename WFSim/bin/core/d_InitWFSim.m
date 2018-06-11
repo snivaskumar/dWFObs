@@ -2,7 +2,7 @@ function [Wp,sol,sys] = d_InitWFSim(Wp,options)
 %INITWFSIM  Initializes the WFSim model
 
     % Import simulation scenario (meshing, atmospheric properties, turbine settings)
-    [Wp]  = d_meshing(Wp.name,options.plotMesh,options.plotMesh, options.exportPressures);
+    [Wp]  = d_meshing(Wp.name,options.plotMesh,options.plotMesh, options.exportPressures, options.sysLen);
     tur         = Wp{1}.tur;
     for i = 1:tur
         % Create empty structs

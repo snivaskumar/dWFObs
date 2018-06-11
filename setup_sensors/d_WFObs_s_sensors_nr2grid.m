@@ -1,9 +1,14 @@
-function [ d_grid,loc,element,d_strucObs ] = d_WFObs_s_sensors_nr2grid( stateid, Wp, d_Wp, d_strucObs)
+% function [ d_grid,loc,element,d_strucObs ] = d_WFObs_s_sensors_nr2grid( stateid, Wp, d_Wp, d_strucObs)
+function [ d_grid,loc,element,TMP ] = d_WFObs_s_sensors_nr2grid( stateid, Wp, d_Wp, TMP )
 %WFObs_s_sensors_nr2grid(stateid,Wp) Converts observation id to grid coordinates.
 
 tur     = d_Wp{1}.tur;
 loc     = cell(tur,1);
 d_grid  = cell(tur,1);
+% TMP = cell(tur,1);
+% for i = 1:tur
+%     TMP{i}.obs_array = [];
+% end
 if stateid <= 0
     error('State id too small. Check consistency with Wp.');
 elseif stateid <= (Wp.Nx-3)*(Wp.Ny-2)
@@ -15,7 +20,7 @@ elseif stateid <= (Wp.Nx-3)*(Wp.Ny-2)
     for i = 1:tur
         Nx = d_Wp{i}.mesh.Nx;
         Ny = d_Wp{i}.mesh.Ny;
-        if ( ( d_Wp{i}.mesh.Nxb<=grid.x )&&( grid.x<=d_Wp{i}.mesh.Nxe ) )...
+        if ( ( d_Wp{i}.mesh.Nxb<=grid.x )&&( grid.x<d_Wp{i}.mesh.Nxe ) )...
                 &&( ( d_Wp{i}.mesh.Nyb<=grid.y )&&( grid.y<=d_Wp{i}.mesh.Nye ) )
             d_grid{i}.x = grid.x - d_Wp{i}.mesh.Nxb + 1;
             d_grid{i}.y = grid.y - d_Wp{i}.mesh.Nyb + 1;
@@ -23,7 +28,10 @@ elseif stateid <= (Wp.Nx-3)*(Wp.Ny-2)
             loc{i}.y = d_Wp{i}.mesh.ldyy(1,d_grid{i}.y);
             ZZ = [1:(Nx-3)*(Ny-2)];
             tmp = reshape(ZZ,(Ny-2),(Nx-3))';
-            d_strucObs{i}.obs_array = tmp( d_grid{i}.x-3+1, d_grid{i}.y-2+1 );
+%             d_strucObs{i}.obs_array = [d_strucObs{i}.obs_array;tmp( d_grid{i}.x-3+1, d_grid{i}.y-2+1 )];
+            if ( ( d_grid{i}.x-3+1 )>0 )&&( ( d_grid{i}.y-2+1 )>0 )
+                TMP{i}.obs_array = [TMP{i}.obs_array;tmp( d_grid{i}.x-3+1, d_grid{i}.y-2+1 )];
+            end
 %             d_strucObs{i}.obs_array_locu(end+1) = loc{i};
         end
     end
@@ -38,7 +46,7 @@ elseif stateid <=(Wp.Nx-3)*(Wp.Ny-2)+(Wp.Nx-2)*(Wp.Ny-3)
     for i = 1:tur
         Nx = d_Wp{i}.mesh.Nx;
         Ny = d_Wp{i}.mesh.Ny;
-        if ( ( d_Wp{i}.mesh.Nxb<=grid.x )&&( grid.x<=d_Wp{i}.mesh.Nxe ) )...
+        if ( ( d_Wp{i}.mesh.Nxb<=grid.x )&&( grid.x<d_Wp{i}.mesh.Nxe ) )...
                 &&( ( d_Wp{i}.mesh.Nyb<=grid.y )&&( grid.y<=d_Wp{i}.mesh.Nye ) )
             d_grid{i}.x = grid.x - d_Wp{i}.mesh.Nxb + 1;
             d_grid{i}.y = grid.y - d_Wp{i}.mesh.Nyb + 1;
@@ -46,7 +54,11 @@ elseif stateid <=(Wp.Nx-3)*(Wp.Ny-2)+(Wp.Nx-2)*(Wp.Ny-3)
             loc{i}.y = d_Wp{i}.mesh.ldyy2(1,d_grid{i}.y);
             ZZ = [(Nx-3)*(Ny-2)+1:(Nx-3)*(Ny-2)+(Nx-2)*(Ny-3)];
             tmp = reshape(ZZ,(Ny-3),(Nx-2))';
-            d_strucObs{i}.obs_array = tmp( d_grid{i}.x-3+1, d_grid{i}.y-2+1 );
+% %             d_strucObs{i}.obs_array = [d_strucObs{i}.obs_array;tmp( d_grid{i}.x-3+1, d_grid{i}.y-2+1 )];
+            if ( ( d_grid{i}.x-2+1 )>0 )&&( ( d_grid{i}.y-3+1 )>0 )
+                TMP{i}.obs_array = [TMP{i}.obs_array;tmp( d_grid{i}.x-2+1, d_grid{i}.y-3+1 )];
+            end
+%             d_strucObs{i}.obs_array = [d_strucObs{i}.obs_array;tmp( d_grid{i}.x-2+1, d_grid{i}.y-3+1 )];
 %             d_strucObs{i}.obs_array_locv(end+1) = loc{i};
         end
     end
@@ -67,7 +79,7 @@ elseif stateid <=(Wp.Nx-3)*(Wp.Ny-2)+(Wp.Nx-2)*(Wp.Ny-3)+(Wp.Nx-2)*(Wp.Ny-2)-2
             loc{i}.y = d_Wp{i}.mesh.ldyy(1,d_grid{i}.y);
             ZZ = [1:(d_Wp{i}.mesh.Nx-3)*(d_Wp{i}.mesh.Ny-2)];
             tmp = reshape(ZZ,(d_Wp{i}.mesh.Ny-2),(d_Wp{i}.mesh.Nx-3))';
-            d_strucObs{i}.obs_array = tmp( d_grid{i}.x-3+1, d_grid{i}.y-2+1 );
+            d_strucObs{i}.obs_array = [d_strucObs{i}.obs_array;tmp( d_grid{i}.x-3+1, d_grid{i}.y-2+1 )];
         end
     end
     Wp.ldxx2(grid.x,1)

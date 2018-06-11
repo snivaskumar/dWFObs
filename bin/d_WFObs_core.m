@@ -50,6 +50,7 @@ timerScript = tic;       % Start script timer
 max_it   = scriptOptions.max_it;    % Convergence constraints
 conv_eps = scriptOptions.conv_eps;  % Convergence constraints
 
+tur = d_Wp{1}.tur;
 % Overwrite variables if WpOverwrite is specified
 if nargin > 2
     if scriptOptions.printProgress
@@ -57,7 +58,7 @@ if nargin > 2
     end
 %     Wp = mergeStruct(Wp,WpOverwrite);
 %     [sys.B1,sys.B2,sys.bc] = Compute_B1_B2_bc(Wp); % Update boundary conditions
-    tur = d_Wp{1}.tur;
+%     tur = d_Wp{1}.tur;
     for i = 1:tur
         d_Wp{i} = mergeStruct(d_Wp{i},WpOverwrite);
         [d_sys{i}.B1,d_sys{i}.B2,d_sys{i}.bc]  = d_Compute_B1_B2_bc(d_Wp{i});
@@ -65,9 +66,10 @@ if nargin > 2
 end
 
 %% Core: time domain simulations
+d_sol_array = cell(tur,1);
 while d_sol{1}.k < d_Wp{1}.sim.NN
     timerCPU = tic;                 % Start iteration timer
-    d_sol_array = cell(tur,1);
+%     d_sol_array = cell(tur,1);
     for i = 1:tur
         d_sol{i}.k    = d_sol{i}.k + 1;           % Timestep forward
         d_sol{i}.time = d_Wp{i}.sim.time(d_sol{i}.k+1);% Timestep forward
@@ -81,16 +83,60 @@ while d_sol{1}.k < d_Wp{1}.sim.NN
         % Calculate optimal solution according to filter of choice
         [d_Wp{i},d_sol{i},d_strucObs{i}] = d_WFObs_o(d_strucObs{i},d_Wp{i},d_sys{i},d_sol{i},d_scriptOptions{i});
     end
-    d_x{1} = d_Wp{1}.state.d_x;        d_x{2} = d_Wp{2}.state.d_x;
-    x = unique( union(d_x{1},d_x{2}) );
-    n = length(x);
-    z{1} = d_sol{1}.x;      Z{1} = d_strucObs{1}.Pk;
-    z{2} = d_sol{2}.x;      Z{2} = d_strucObs{2}.Pk;
-    [xe,Ce] = fuze(z,Z,d_x,tur,n,0,0,[1:n]','C',1,'CONSTANT');
-    tmp1 = ismember(x,d_x{1});
-    tmp2 = ismember(x,d_x{2});
-    d_sol{1}.x = xe(tmp1);    d_strucObs{1}.Pk = Ce(tmp1,tmp1);
-    d_sol{1}.x = xe(tmp2);    d_strucObs{2}.Pk = Ce(tmp2,tmp2);
+    fusion          = upper( scriptOptions.fusion );
+    fusion_type     = upper( strucObs.fusionDomain );
+    fusion_weight   = upper( strucObs.fusion_weight );
+    constant        = strucObs.fusion_CIconstant; 
+%     dx = cell(tur,1);
+%     for i = 1:tur
+%         for ii = 1:tur
+%             if i~=ii
+%                 for j = 1:d_strucObs{i}.size_output
+%                     if sum( ( d_strucObs{i}.state(j,1) == d_strucObs{ii}.state(:,1) )&...
+%                             ( d_strucObs{i}.state(j,2) == d_strucObs{ii}.state(:,2) ) )
+%                         dx{i} = [dx{i};j];
+%                     end
+%                 end
+%             end
+%         end
+%     end
+% % %     dx = cell(tur,1);
+% % %     for i = 1:1
+% % %         for j = 1:d_strucObs{i}.size_output
+% % %             if sum( ( d_strucObs{i}.state(j,1) == d_strucObs{i+1}.state(:,1) )&...
+% % %                     ( d_strucObs{i}.state(j,2) == d_strucObs{i+1}.state(:,2) ) )
+% % %                 dx{i} = [dx{i};j];
+% % %                 n = d_strucObs{i+1}.size_output;
+% % %                 tmp = [1:n]';
+% % %                 indices = ( ( d_strucObs{i}.state(j,1) == d_strucObs{i+1}.state(:,1) )&...
+% % %                     ( d_strucObs{i}.state(j,2) == d_strucObs{i+1}.state(:,2) ) );
+% % %                 dx{i+1} = [dx{i+1};tmp(indices)];
+% % %             end
+% % %         end
+% % %     end
+    if ( strcmp(strucObs.filtertype,'dexkf')||...
+            strcmp(strucObs.filtertype,'exkf') )&&...
+            strcmp(fusion,'YES')
+        d_x{1} = d_Wp{1}.state.d_x;        d_x{2} = d_Wp{2}.state.d_x;
+        x = unique( union(d_x{1},d_x{2}) );
+        n = length(x);
+        z{1} = d_sol{1}.x;      Z{1} = d_strucObs{1}.Pk;
+        z{2} = d_sol{2}.x;      Z{2} = d_strucObs{2}.Pk;
+        if strcmp(fusion_type,'IFAC') 
+            [xe,Ce] = fuze(z,Z,d_x,tur,n,0,0,[1:n]','C',1,'CONSTANT');
+            tmp1 = ismember(x,d_x{1});
+            tmp2 = ismember(x,d_x{2});
+            d_sol{1}.x = xe(tmp1);    d_strucObs{1}.Pk = Ce(tmp1,tmp1);
+            d_sol{2}.x = xe(tmp2);    d_strucObs{2}.Pk = Ce(tmp2,tmp2);
+        elseif strcmp(fusion_type,'D_IFAC') 
+            [d_sol{1}.x,d_strucObs{1}.Pk] = d_fuze(z,Z,d_x,tur,1,0,0,[1:n]','C',1,fusion_weight);
+            [d_sol{2}.x,d_strucObs{2}.Pk] = d_fuze(z,Z,d_x,tur,2,0,0,[1:n]','C',1,fusion_weight);
+        else
+            [zf, Zf] = d_fuze2(z{1},z{2},Z{1},Z{2},d_x{1},d_x{2},fusion_type,fusion_weight,constant);
+            d_sol{1}.x = zf{1};         d_strucObs{1}.Pk = Zf{1};
+            d_sol{2}.x = zf{2};         d_strucObs{2}.Pk = Zf{2};
+        end
+    end
     for i = 1:tur
         [d_sol{i},~]  = MapSolution(d_Wp{i},d_sol{i},Inf,d_scriptOptions{i}); % Map solution to flowfields
         [~,d_sol{i}]  = d_Actuator(d_Wp{i},d_sol{i},d_scriptOptions{i});        % Recalculate power after analysis update
@@ -106,7 +152,6 @@ while d_sol{1}.k < d_Wp{1}.sim.NN
         else
             d_sol_array{i}(d_sol{i}.k) = rmfield(d_sol{i},{'uu','vv','pp'});
         end
-
         % Display animations on screen
         [d_hFigs{i},d_scriptOptions{i}] = d_WFObs_s_animations(d_Wp{i},d_sol_array{i},d_sys{i},LESData,d_scriptOptions{i},d_strucObs{i},d_hFigs{i});
     end
@@ -149,15 +194,15 @@ end
 % save workspace variables, if necessary
 if scriptOptions.saveWorkspace
     save([scriptOptions.savePath '/workspace.mat'],'configName',...
-        'Wp','sys','sol_array','scriptOptions','strucObs');
+        'd_Wp','d_sys','d_sol_array','d_scriptOptions','d_strucObs');
 end
 
 % Put all relevant outputs in one structure
 if nargout >= 1
-    outputData.sol_array     = sol_array;
-    outputData.Wp            = Wp;
-    outputData.strucObs      = strucObs;
-    outputData.scriptOptions = scriptOptions;
+    outputData.d_sol_array     = d_sol_array;
+    outputData.d_Wp            = d_Wp;
+    outputData.d_strucObs      = d_strucObs;
+    outputData.d_scriptOptions = d_scriptOptions;
     outputData.configName    = configName;
 end;
 

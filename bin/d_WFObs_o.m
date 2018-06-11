@@ -53,7 +53,7 @@ function [ Wp,sol,strucObs ] = d_WFObs_o(strucObs,Wp,sys,sol,options)
 switch lower(strucObs.filtertype)
     case 'dexkf'
         % Distributed Extended Kalman filtering
-        [Wp,sol,strucObs] = WFObs_o_dexkf(strucObs,Wp,sys,sol,options);
+        [Wp,sol,strucObs] = d_WFObs_o_dexkf(strucObs,Wp,sys,sol,options);
     case 'exkf'
         % Extended Kalman filtering
         [Wp,sol,strucObs] = d_WFObs_o_exkf(strucObs,Wp,sys,sol,options);

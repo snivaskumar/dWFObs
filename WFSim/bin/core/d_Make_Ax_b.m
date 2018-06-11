@@ -11,7 +11,7 @@ else
 end;
 
 % The following is really the core of WFSim: creating the system matrices
-[StrucDiscretization]                = d_SpatialDiscr_Hybrid(Wp,sol,options.Linearversion); % Spatial discretization
+[StrucDiscretization]                = d_SpatialDiscr_Hybrid(Wp,sol,options.Linearversion,options); % Spatial discretization
 [StrucDiscretization,StrucDynamical] = Dynamical(Wp,StrucDiscretization,sol,dt,options.Linearversion);  % Dynamical term
 [StrucActuator,sol]                  = d_Actuator(Wp,sol,options); % Actuator/forcing function
 [StrucDiscretization,StrucBCs]       = BoundaryConditions(Wp,StrucDiscretization,sol,options.Linearversion); % Zero gradient boundary conditions momentum equations

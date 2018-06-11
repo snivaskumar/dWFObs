@@ -22,7 +22,9 @@ k   = 0;
 if strcmp(typeCZ,'C')
     C = Z;
     if typeIFAC == 2
-        Zkk1{i} = inv(Zkk1{i});
+        for i = 1:hr
+            Zkk1{i} = inv(Zkk1{i});
+        end
     end
 elseif strcmp(typeCZ,'Z')
     for i = 1:hr
@@ -40,7 +42,7 @@ for i = 1:hr
     end
     if strcmp(typeWeight,'CONSTANT')
         w = l;
-        Ze(k+1:nn,k+1:nn)   = inv( (1/w).*C{i} );
+        Ze(k+1:nn,k+1:nn)   = pinv( (1/w).*C{i} );
     elseif strcmp(typeWeight,'OPTIMAL')
         Ze(k+1:nn,k+1:nn)   = C{i};
 %         f = @(w) trace((1/w).*C{i});

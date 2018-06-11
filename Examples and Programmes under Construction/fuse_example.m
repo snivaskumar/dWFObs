@@ -28,7 +28,7 @@ z1 = z(x{1});z2 = z(x{2});z3 = z(x{3});
 P1 = P(x{1},x{1});P2 = P(x{2},x{2});P3 = P(x{3},x{3});
 Z1 = Z(x{1},x{1});Z2 = Z(x{2},x{2});Z3 = Z(x{3},x{3});
 
-[c,C,cc] = fuze2(a1,a2,P1,P2,x{1},x{2},1);
+[c,C,cc] = fuze2(a1,a2,P1,P2,x{1},x{2},'CIN');
 [zc,ZC,zcc] = haha(z1,z2,Z1,Z2,x{1},x{2},3);
 zc,z(zcc),ZC,Z(zcc,zcc)
 

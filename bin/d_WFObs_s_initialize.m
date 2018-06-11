@@ -91,10 +91,14 @@ if strucObs.measFlow
     for i = 1:tur
         d_strucObs{i}.obs_array_locu = struct('x',{},'y',{});
         d_strucObs{i}.obs_array_locv = struct('x',{},'y',{});
+        d_strucObs{i}.obs_array      = []; 
+        TMP{i}.obs_array      = []; 
     end
     for j = 1:length(strucObs.obs_array)
-        [ ~,d_locSensor,d_typeFlow,d_strucObs ] = d_WFObs_s_sensors_nr2grid( strucObs.obs_array(j), d_Wp{1}.actualmesh, d_Wp, d_strucObs);
+%         [ ~,d_locSensor,d_typeFlow,d_strucObs ] = d_WFObs_s_sensors_nr2grid( strucObs.obs_array(j), d_Wp{1}.actualmesh, d_Wp, d_strucObs);
+        [ ~,d_locSensor,d_typeFlow,TMP ] = d_WFObs_s_sensors_nr2grid( strucObs.obs_array(j), d_Wp{1}.actualmesh, d_Wp, TMP);
         for i = 1:tur
+            d_strucObs{i}.obs_array = TMP{i}.obs_array;
             if length( d_locSensor{i} )
                 if strcmp(d_typeFlow,'u')
                     d_strucObs{i}.obs_array_locu(end+1) = d_locSensor{i};
@@ -109,6 +113,54 @@ else
         d_strucObs{i}.obs_array = [];
     end
 end;
+
+% if strucObs.measFlow
+%     sensorsfile        = load(strucObs.sensorsPath);
+%     strucObs.obs_array = unique([sensorsfile.sensors{1}.obsid; sensorsfile.sensors{2}.obsid]);
+%     
+%     % Calculate obs_array locations
+%     strucObs.obs_array_locu = struct('x',{},'y',{});
+%     strucObs.obs_array_locv = struct('x',{},'y',{});
+%     for i = 1:tur
+%         d_strucObs{i}.obs_array_locu = struct('x',{},'y',{});
+%         d_strucObs{i}.obs_array_locv = struct('x',{},'y',{});
+%         d_strucObs{i}.obs_array_locu = [];
+%         d_strucObs{i}.obs_array_locu.x = [];
+%         d_strucObs{i}.obs_array_locu.y = [];
+%         d_strucObs{i}.obs_array_locv = [];
+%         d_strucObs{i}.obs_array_locv.x = [];
+%         d_strucObs{i}.obs_array_locv.y = [];
+%         d_strucObs{i}.obs_array      = []; 
+%         Crx = d_Wp{i}.turbine.Crx;
+%         Cry = d_Wp{i}.turbine.Cry;
+%         sysLen = d_scriptOptions{i}.sysLen*d_Wp{i}.turbine.Drotor;
+%         for j = 1:length(strucObs.obs_array)
+%             [ ~,locSensor,typeFlow ] = WFObs_s_sensors_nr2grid( strucObs.obs_array(j), d_Wp{1}.actualmesh);
+%             if strcmp(typeFlow,'u')
+%                 strucObs.obs_array_locu(end+1) = locSensor;
+%                 if ( abs(locSensor.x - Crx(i) )<= sysLen )...
+%                         &&( abs(locSensor.y - Cry(i) )<= sysLen )
+%                     d_strucObs{i}.obs_array_locu.x  = [d_strucObs{i}.obs_array_locu.x,locSensor.x]; 
+%                     d_strucObs{i}.obs_array_locu.y  = [d_strucObs{i}.obs_array_locu.y,locSensor.y];
+%                     d_strucObs{i}.obs_array         = [d_strucObs{i}.obs_array,strucObs.obs_array(j)];
+%                 end
+%             else
+%                 strucObs.obs_array_locv(end+1) = locSensor;
+%                 if ( abs(locSensor.x - Crx(i) )<= sysLen )...
+%                         &&( abs(locSensor.y - Cry(i) )<= sysLen )
+%                     d_strucObs{i}.obs_array_locv.x  = [d_strucObs{i}.obs_array_locv.x,locSensor.x]; 
+%                     d_strucObs{i}.obs_array_locv.y  = [d_strucObs{i}.obs_array_locv.y,locSensor.y];
+%                     d_strucObs{i}.obs_array         = [d_strucObs{i}.obs_array,strucObs.obs_array(j)];
+%                 end
+%             end
+%         end
+%     end
+% else
+%     strucObs.obs_array = [];
+%     for i = 1:tur
+%         d_strucObs{i}.obs_array = [];
+%     end
+% end;
 
 % Load measurements from LES simulation (*.mat file)
 LESData    = load(d_Wp{1}.sim.measurementFile); % Load measurements

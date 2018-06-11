@@ -31,7 +31,13 @@ strucObs.U_Inf.intFactor = 0.99;  % LPF gain (1: do not change, 0: instant chang
 strucObs.measPw      = false;  % Use power measurements (SCADA) from turbines in estimates
 strucObs.measFlow    = true;   % Use flow measurements (LIDAR) in estimates
 strucObs.sensorsPath = 'sensors_2turb_alm'; % measurement setup filename (see '/setup_sensors/sensors_layouts')
-        
+
+scriptOptions.sysLen        = 4;
+scriptOptions.Turbulence    = 2;
+scriptOptions.fusion        = 'yes';
+strucObs.fusionDomain       = 'CIN';
+strucObs.fusion_weight      = 'constant';    % IFAC Weight
+strucObs.fusion_CIconstant  = 0.5;
 % Kalman filter settings
 strucObs.filtertype = 'exkf'; % Observer types are outlined next
 switch lower(strucObs.filtertype)
@@ -58,7 +64,7 @@ switch lower(strucObs.filtertype)
                                 % Subsys_length = x  if Subsys_length = x
         strucObs.fusion_type    = 'ifac';   % CI = 0,1; EI = 2; ICI = 3, IFAC = 4, No fusion = 5
         strucObs.IFAC_type      = 1;        % 1 for z_k, 2 for z_k and x_p
-        strucObs.IFACWeight     = 'optimal';% Optimal or Constant
+        strucObs.IFACWeight     = 'constant';% Optimal or Constant
         strucObs.typeCZ         = 'z';      % C = Co-Variance, Z = Information
         strucObs.linearize_freq = Inf;      % 50 if linearize the non-linear system every 50 iterations
                                             % 100 if linearize the non-linear system every 100 iterations
@@ -123,6 +129,10 @@ switch lower(strucObs.filtertype)
                                             % 100 if linearize the non-linear system every 100 iterations
                                             % N if linearize the non-linear system every N iterations
                                             % Inf if linearize the non-linear system only at the first iteration
+        strucObs.localize   = 1;
+        strucObs.l_locl     = 2*131;
+        strucObs.stateEst   = true;     % Estimate model states
+        strucObs.tune.est   = false;    % Estimate model parameters
         
     % Sliding mode observer (SMO)    
     case {'smo'}

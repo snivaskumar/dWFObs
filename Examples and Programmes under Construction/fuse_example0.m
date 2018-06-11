@@ -1,71 +1,71 @@
-% clear all
-% close all
-% clc
-% 
-% hr = 4;
-% x       = cell(hr,1);
-% x{1}    = [1,2,3]';
-% x{2}    = [1,4]';
-% x{3}    = [4,5]';
-% x{4}    = [2,3,6]';
-% 
-% zk1k1= [1.9278; -0.1936; 2.7214; 1.1245; 1.8360; 1.9433]
-% load('/Users/Nivas_Kumar/Desktop/haha.mat','Zt1t1','ztt');
-% Slkk = Zt1t1;
-% xlkk = ztt;
-% 
-% i = 2;
-% j = 1;
-% a = xlkk{i};
-% b = xlkk{j};
-% P1 = Slkk{i};
-% P2 = Slkk{j};
-% 
-% l1 = length(x{i});
-% [cc1,ia1]=setdiff(x{i},x{j});
-% Tmp1 = zeros(l1,l1);
-% Tmp1(ia1,ia1) = eye(length(ia1),length(ia1));
-% Tmp1 = Tmp1(ia1,[1:l1])
-% 
-% l2 = length(x{j});
-% [ha,cc2,ia2] = intersect(x{i},x{j});
-% Tmp2 = zeros(l2,l2);
-% Tmp2(ia2,ia2) = eye(length(ia2),length(ia2));
-% Tmp2 = Tmp2(ia2,[1:l2])
-% 
-% x_a = x{i}
-% x_b = [Tmp2*x{j}; Tmp1*x{i}];
-% 
-% [x_b,ix] = sort(x_b);
+clear all
+close all
+clc
+
+hr = 4;
+x       = cell(hr,1);
+x{1}    = [1,2,3]';
+x{2}    = [1,4]';
+x{3}    = [4,5]';
+x{4}    = [2,3,6]';
+
+zk1k1= [1.9278; -0.1936; 2.7214; 1.1245; 1.8360; 1.9433]
+load('/Users/Nivas_Kumar/Documents/NivasStudyMaterials/TUDelft/EnKF+WFSim/dWFObs/Examples and Programmes under Construction/haha.mat','Zt1t1','ztt');
+Slkk = Zt1t1;
+xlkk = ztt;
+
+i = 1;
+j = 2;
+a = xlkk{i};
+b = xlkk{j};
+P1 = Slkk{i};
+P2 = Slkk{j};
+
+l1 = length(x{i});
+[cc1,ia1]=setdiff(x{i},x{j});
+Tmp1 = zeros(l1,l1);
+Tmp1(ia1,ia1) = eye(length(ia1),length(ia1));
+Tmp1 = Tmp1(ia1,[1:l1])
+
+l2 = length(x{j});
+[ha,cc2,ia2] = intersect(x{i},x{j});
+Tmp2 = zeros(l2,l2);
+Tmp2(ia2,ia2) = eye(length(ia2),length(ia2));
+Tmp2 = Tmp2(ia2,[1:l2])
+
+x_a = x{i}
+x_b = [Tmp2*x{j}; Tmp1*x{i}];
+
+[x_b,ix] = sort(x_b);
+x_b
+
+a       = a;
+btmp    = [Tmp2*b; Tmp1*a];
+b       = btmp(ix);
 % x_b
 % 
-% a       = a;
-% btmp    = [Tmp2*b; Tmp1*a];
-% b       = btmp(ix);
-% % x_b
-% % 
-% lc1 = length(cc1);
-% lc2 = length(cc2);
-% 
-% PP = zeros(l1,l1);
-% PP(cc2,cc2) = Tmp2*P2*Tmp2';
-% 
-% [Sa,Da] = eig(P1);
-% [Sb,Db] = eig(PP);
-% 
-% [~,I] = sort(diag(Db),'descend');
-% Sb = Sb(I,I);
-% Db = Db(I,I);
-% 
-% for ii = 1:length(x{i})
-%     if Db(ii,ii) == 0
-%         Gb(ii,ii) = 1;
-%     else
-%         Gb(ii,ii) = Db(ii,ii);
-%     end
-% end
-% X_b = Sa*(Da^0.5)*Sb*Gb*pinv(Sb)*(Da^0.5)*pinv(Sa);
-% X_a = P1;
+lc1 = length(cc1);
+lc2 = length(cc2);
+
+PP = zeros(l1,l1);
+PP(cc2,cc2) = Tmp2*P2*Tmp2';
+
+[Sa,Da] = eig(P1);
+[Sb,Db] = eig(PP);
+
+[~,I] = sort(diag(Db),'descend');
+Sb = Sb(I,I);
+Db = Db(I,I);
+
+for ii = 1:length(x{i})
+    if Db(ii,ii) == 0
+        Gb(ii,ii) = 1;
+    else
+        Gb(ii,ii) = Db(ii,ii);
+    end
+end
+X_b = Sa*(Da^0.5)*Sb*Gb*pinv(Sb)*(Da^0.5)*pinv(Sa);
+X_a = P1;
 
 %%
 clear all

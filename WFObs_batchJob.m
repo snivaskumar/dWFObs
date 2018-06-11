@@ -43,5 +43,5 @@ for j = 1:size(filenames,1)
     scriptOptions.savePath = ['results/batchjob/' filenames(j).name(1:end-2)];
     
     % Perform simulation
-    outputData = WFObs_core(scriptOptions,filenames(j).name);
+    outputData = d_WFObs_core(scriptOptions,filenames(j).name);
 end

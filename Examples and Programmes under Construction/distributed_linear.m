@@ -12,9 +12,9 @@ Slff = cell(hr,1);
 Slfd = cell(hr,1);
 Sldd = cell(hr,1);
 
-% Slee = cell(hr,1);
-% Slfe = cell(hr,1);
-% Slde = cell(hr,1);
+Slee = cell(hr,1);
+Slfe = cell(hr,1);
+Slde = cell(hr,1);
 if strucObs.Optimize == 0
     Slee_tmp = Sk1k1( x_unest,x_unest );
 else
@@ -27,13 +27,15 @@ for i = 1:hr
     Sldd{i} = Sk1k1( d{i},d{i} );            % Sdd(k-1/k-1)_l
     if strucObs.extremeOptimize == 1
         factor = strucObs.superOptimizeFactor;
-        indices         = find( abs(Sldd{i})<factor );
-        Sldd{i}(indices)= 0;
-        Sldd{i}         = sparse(Sldd{i});
+        if length(d{i}) > 0
+            indices         = find( abs(Sldd{i})<factor );
+            Sldd{i}(indices)= 0;
+            Sldd{i}         = sparse(Sldd{i});
         
-        indices         = find( abs(Slfd{i})<factor );
-        Slfd{i}(indices)= 0;
-        Slfd{i}         = sparse(Slfd{i});
+            indices         = find( abs(Slfd{i})<factor );
+            Slfd{i}(indices)= 0;
+            Slfd{i}         = sparse(Slfd{i});
+        end
         
         indices         = find( abs(Slff{i})<factor );
         Slff{i}(indices)= 0;
@@ -43,7 +45,9 @@ for i = 1:hr
     if strucObs.Optimize == 0
 %     Unoptimized (Entire matrices):
         Slfe{i} = Sk1k1( x{i},x_unest );
-        Slde{i} = Sk1k1( d{i},x_unest );
+        if length(d{i}) > 0
+            Slde{i} = Sk1k1( d{i},x_unest );
+        end
     else        
 %     Optimized (Only the diagonal entries):
         len_x       = length(x{i});
@@ -53,8 +57,10 @@ for i = 1:hr
 %         Slee{i} = sparse(diag(diag(Slee_tmp)));
         Slfe{i} = sparse(zeros(len_x,len_xunest));
         Slfe{i}(1:min(len_x,len_xunest),1:min(len_x,len_xunest)) = sparse(diag(diag(Sk1k1( x{i},x_unest ))));
-        Slde{i} = sparse(zeros(len_d,len_xunest));
-        Slde{i}(1:min(len_d,len_xunest),1:min(len_d,len_xunest)) = sparse(diag(diag(Sk1k1( d{i},x_unest ))));
+        if length(d{i}) > 0
+            Slde{i} = sparse(zeros(len_d,len_xunest));
+            Slde{i}(1:min(len_d,len_xunest),1:min(len_d,len_xunest)) = sparse(diag(diag(Sk1k1( d{i},x_unest ))));
+        end
     end
 end
 % toc
@@ -78,15 +84,24 @@ parfor i = 1:hr
 %                 + D{i}*Slde{i}*E{i}' + (D{i}*Slde{i}*E{i}')'...
 %                 + E{i}*Slee{i}*E{i}';
 
-    S1 = F{i}*Slff{i}*F{i}'; S2 = F{i}*Slfd{i}*D{i}';
-    S3 = D{i}*Sldd{i}*D{i}';    
-    S4 = D{i}*Slde{i}*E{i}'; S5 = E{i}*Slee{i}*E{i}'; 
+    S1 = F{i}*Slff{i}*F{i}'; 
+    if length(d{i}) > 0
+        S2 = F{i}*Slfd{i}*D{i}';
+        S3 = D{i}*Sldd{i}*D{i}';    
+        S4 = D{i}*Slde{i}*E{i}'; 
+    end
+    S5 = E{i}*Slee{i}*E{i}'; 
     S6 = F{i}*Slfe{i}*E{i}';
     
-%     Slkk1{i} = S1 + S2 + S2' + S3 + Q{i};    
-    Slkk1{i} = S1 + S2 + S2'...
-             + S3 + S4 + S4'...
-             + S5 + S6 + S6' + Q{i};
+%     Slkk1{i} = S1 + S2 + S2' + S3 + Q{i};   
+    if length(d{i}) > 0
+        Slkk1{i} = S1 + S2 + S2'...
+                 + S3 + S4 + S4'...
+                 + S5 + S6 + S6' + Q{i};
+    else
+        Slkk1{i} = S1 + ...
+                 + S5 + S6 + S6' + Q{i};
+    end
             
     y{i}        = yy( : );
 end

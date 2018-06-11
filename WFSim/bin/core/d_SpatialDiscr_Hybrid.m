@@ -1,4 +1,4 @@
-function [output] = d_SpatialDiscr_Hybrid(Wp,sol,Linearversion)
+function [output] = d_SpatialDiscr_Hybrid(Wp,sol,Linearversion,options)
 % dxx   = \Delta x_{I,I+1}
 % dyy   = \Delta y_{J,J+1}
 % dxx2  = \Delta x_{i,i+1}

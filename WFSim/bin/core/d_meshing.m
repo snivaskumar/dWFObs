@@ -1,4 +1,4 @@
-function [ Wp ] = d_meshing( scenarioName, plotMesh, PrintGridMismatch, exportPressures )
+function [ Wp ] = d_meshing( scenarioName, plotMesh, PrintGridMismatch, exportPressures, sysLen )
 %MESHING Meshing and settings function for the WFSim code
 % This code includes all the topology information, atmospheric
 % information, turbine properties and turbine control settings for any
@@ -234,25 +234,27 @@ ldxx2 = repmat(ldx2',1,Ny);
 ldyy2 = repmat(ldy2,Nx,1);
 
 tur     = length(Crx);     % Number of turbines
-sysLen  = 4*Drotor;
+% sysLenx = 5.5*Drotor;
+sysLenx = sysLen*Drotor;
+sysLeny = sysLen*Drotor;
 for i = 1:tur
-    ID{i}       = find( ( abs(Crx-Crx(i))<=sysLen )&( abs(Cry-Cry(i))<=sysLen ) );
-    d_ldy{i}    = ldy( abs(ldy - Cry(i) )<= sysLen );
+    ID{i}       = find( ( abs(Crx-Crx(i))<=sysLenx )&( abs(Cry-Cry(i))<=sysLeny ) );
+    d_ldy{i}    = ldy( abs(ldy - Cry(i) )<= sysLeny );
     Lye{i}      = max( d_ldy{i} );     % Ending Position
     Lyb{i}      = min( d_ldy{i} );     % Beginning Position
     Nyb{i}      = find( ldy == Lyb{i} );
     Nye{i}      = find( ldy == Lye{i} );
     
-    d_ldx{i}    = ldx( abs(ldx - Crx(i))<= sysLen );
+    d_ldx{i}    = ldx( abs(ldx - Crx(i))<= sysLenx );
     Lxe{i}      = max( d_ldx{i} );     % Ending Position
     Lxb{i}      = min( d_ldx{i} );     % Beginning Position
     Nxb{i}      = find( ldx == Lxb{i} );
     Nxe{i}      = find( ldx == Lxe{i} );
         
-    d_ldy2{i}   = ldy2( abs(ldy2 - Cry(i))<= sysLen );
+    d_ldy2{i}   = ldy2( abs(ldy2 - Cry(i))<= sysLeny );
     Lsec{i}     = find( ldy2 == min(d_ldy2{i}) );
     Rsec{i}     = find( ldy2 == max(d_ldy2{i}) );
-    d_ldx2{i}   = ldx2( abs(ldx2 - Crx(i))<= sysLen );
+    d_ldx2{i}   = ldx2( abs(ldx2 - Crx(i))<= sysLenx );
     Bsec{i}     = find( ldx2 == min(d_ldx2{i}) );
     Tsec{i}     = find( ldx2 == max(d_ldx2{i}) );
     
