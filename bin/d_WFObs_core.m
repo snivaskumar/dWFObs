@@ -82,38 +82,45 @@ while d_sol{1}.k < d_Wp{1}.sim.NN
 
         % Calculate optimal solution according to filter of choice
         [d_Wp{i},d_sol{i},d_strucObs{i}] = d_WFObs_o(d_strucObs{i},d_Wp{i},d_sys{i},d_sol{i},d_scriptOptions{i});
+        
+%         if i == 1
+%             Nxb = d_Wp{2}.mesh.NNxb;
+%             Nxe = d_Wp{2}.mesh.NNxe;
+%             Nyb = d_Wp{2}.mesh.NNyb;
+%             Nye = d_Wp{2}.mesh.NNye;
+%             [ru,cu] = size(d_sol{2}.u);
+%             [rv,cv] = size(d_sol{2}.v);
+%             tmpu = d_sol{2}.u;        tmpuu = d_sol{2}.uu;
+%             tmpv = d_sol{2}.v;        tmpvv = d_sol{2}.vv;
+%             u = d_sol{1}.u;     uu = d_sol{1}.uu;
+%             v = d_sol{1}.v;     vv = d_sol{1}.vv;
+%             for j = 1:ru
+%                 for k = 1:cu
+%                     if (( Nxb{1}+j-1 )<=Nxe{1})&&(( Nyb{1}+k-1 )<=Nye{1})
+%                         tmpu(j,k) = u( Nxb{1}+j-1,Nyb{1}+k-1 );
+%                         tmpuu(j,k) = uu( Nxb{1}+j-1,Nyb{1}+k-1 );  
+%                     end
+%                 end
+%             end
+%             for j = 1:rv
+%                 for k = 1:cv
+%                     if (( Nxb{1}+j-1 )<=Nxe{1})&&(( Nyb{1}+k-1 )<=Nye{1})
+%                         tmpv(j,k) = v( Nxb{1}+j-1,Nyb{1}+k-1 );
+%                         tmpvv(j,k) = vv( Nxb{1}+j-1,Nyb{1}+k-1 );  
+%                     end
+%                 end
+%             end
+%             d_sol{2}.u = tmpu;        d_sol{2}.uu = tmpuu;
+%             d_sol{2}.v = tmpv;        d_sol{2}.vv = tmpvv;
+%         end
     end
+    filter          = strucObs.filtertype; 
     fusion          = upper( scriptOptions.fusion );
     fusion_type     = upper( strucObs.fusionDomain );
     fusion_weight   = upper( strucObs.fusion_weight );
     constant        = strucObs.fusion_CIconstant; 
-%     dx = cell(tur,1);
-%     for i = 1:tur
-%         for ii = 1:tur
-%             if i~=ii
-%                 for j = 1:d_strucObs{i}.size_output
-%                     if sum( ( d_strucObs{i}.state(j,1) == d_strucObs{ii}.state(:,1) )&...
-%                             ( d_strucObs{i}.state(j,2) == d_strucObs{ii}.state(:,2) ) )
-%                         dx{i} = [dx{i};j];
-%                     end
-%                 end
-%             end
-%         end
-%     end
-% % %     dx = cell(tur,1);
-% % %     for i = 1:1
-% % %         for j = 1:d_strucObs{i}.size_output
-% % %             if sum( ( d_strucObs{i}.state(j,1) == d_strucObs{i+1}.state(:,1) )&...
-% % %                     ( d_strucObs{i}.state(j,2) == d_strucObs{i+1}.state(:,2) ) )
-% % %                 dx{i} = [dx{i};j];
-% % %                 n = d_strucObs{i+1}.size_output;
-% % %                 tmp = [1:n]';
-% % %                 indices = ( ( d_strucObs{i}.state(j,1) == d_strucObs{i+1}.state(:,1) )&...
-% % %                     ( d_strucObs{i}.state(j,2) == d_strucObs{i+1}.state(:,2) ) );
-% % %                 dx{i+1} = [dx{i+1};tmp(indices)];
-% % %             end
-% % %         end
-% % %     end
+    iteration       = strucObs.fusion_CIiteration; 
+    
     if ( strcmp(strucObs.filtertype,'dexkf')||...
             strcmp(strucObs.filtertype,'exkf') )&&...
             strcmp(fusion,'YES')
@@ -123,7 +130,7 @@ while d_sol{1}.k < d_Wp{1}.sim.NN
         z{1} = d_sol{1}.x;      Z{1} = d_strucObs{1}.Pk;
         z{2} = d_sol{2}.x;      Z{2} = d_strucObs{2}.Pk;
         if strcmp(fusion_type,'IFAC') 
-            [xe,Ce] = fuze(z,Z,d_x,tur,n,0,0,[1:n]','C',1,'CONSTANT');
+            [xe,Ce] = dfuze(z,Z,d_x,tur,n,0,0,[1:n]','C','CONSTANT');
             tmp1 = ismember(x,d_x{1});
             tmp2 = ismember(x,d_x{2});
             d_sol{1}.x = xe(tmp1);    d_strucObs{1}.Pk = Ce(tmp1,tmp1);
@@ -131,10 +138,86 @@ while d_sol{1}.k < d_Wp{1}.sim.NN
         elseif strcmp(fusion_type,'D_IFAC') 
             [d_sol{1}.x,d_strucObs{1}.Pk] = d_fuze(z,Z,d_x,tur,1,0,0,[1:n]','C',1,fusion_weight);
             [d_sol{2}.x,d_strucObs{2}.Pk] = d_fuze(z,Z,d_x,tur,2,0,0,[1:n]','C',1,fusion_weight);
+        elseif strcmp(fusion_type,'AVG') 
+            zz=z;
+            l1 = length(d_x{1});
+            l2 = length(d_x{2});
+            tmp1 = zeros(l2,1);    tmp2 = zeros(l1,1);
+            for i = 1:l1
+                loc = d_x{1}(i)==d_x{2};
+                if sum( double( loc ) )
+                    tmp1 = tmp1 + double( loc );
+                    tmpz = z{2}( loc );
+                    tmpZ = Z{2}( loc,loc );
+                    zz{1}(i) = ( z{1}(i)+z{2}(loc) )/2;
+                else
+                    zz{1}(i) = z{1}(i);
+                end
+            end
+            for i = 1:l2
+                if sum( d_x{2}(i)==d_x{1} )
+                    tmp2 = tmp2 + double( d_x{2}(i)==d_x{1} );
+                    zz{2}(i) = ( z{2}(i)+z{1}(d_x{2}(i)==d_x{1}) )/2;
+                else
+                    zz{2}(i) = z{2}(i);
+                end
+            end
+            z = zz;
+            d_sol{1}.x = z{1};  d_sol{2}.x = z{2};
+        elseif strcmp(fusion_type,'BAR')
+            a1 = d_x{1};
+            a2 = d_x{2};
+            l1 = length(a1);
+            l2 = length(a2);
+            
+            k1 = 0;
+            H1 = [];
+            for iii = 1:l1
+                if sum(a1(iii)==a2)
+                    k1 = k1+1;
+                    H1(k1,:) = double(a1(iii)==a2);
+                end
+            end
+            H1 = sparse(H1);
+            k2 = 0;
+            H2 = [];
+            for iii = 1:l2
+                if sum(a2(iii)==a1)   
+                    k2 = k2+1;
+                    H2(k2,:) = double(a2(iii)==a1);
+                end
+            end
+            H2 = sparse(H2);
+
+%             Z{1} = 2*Z{1};
+%             Z{2} = 2*Z{2};
+            
+            zftmp = z;
+            Pftmp = Z;
+            Pff = pinv( H2*Z{1}*H2' + H1*Z{2}*H1' );
+            K1 = Z{1}*H2'*Pff;
+            K2 = Z{2}*H1'*Pff;
+            zftmp{1} = zftmp{1} + K1*(H1*z{2}-H2*z{1});
+            zftmp{2} = zftmp{2} + K2*(H2*z{1}-H1*z{2});
+            ll1 = length(K1*H2);
+            Pftmp{1} = ( eye(ll1,ll1)-K1*H2 )*Z{1} ;
+            ll2 = length(K2*H1);
+            Pftmp{2} = ( eye(ll2,ll2)-K2*H1 )*Z{2} ;
+            z = zftmp;
+            Z = Pftmp;
+            
+            d_sol{1}.x = z{1};    d_strucObs{1}.Pk = Z{1};
+            d_sol{2}.x = z{2};    d_strucObs{2}.Pk = Z{2};
         else
-            [zf, Zf] = d_fuze2(z{1},z{2},Z{1},Z{2},d_x{1},d_x{2},fusion_type,fusion_weight,constant);
-            d_sol{1}.x = zf{1};         d_strucObs{1}.Pk = Zf{1};
-            d_sol{2}.x = zf{2};         d_strucObs{2}.Pk = Zf{2};
+%             [zf, Zf] = d_fuze2(z{1},z{2},Z{1},Z{2},d_x{1},d_x{2},fusion_type,fusion_weight,constant,iteration);
+%             d_sol{1}.x = zf{1};         d_strucObs{1}.Pk = Zf{1};
+%             d_sol{2}.x = zf{2};         d_strucObs{2}.Pk = Zf{2};
+            
+            [zf, Zf] = fuse2(z{1},z{2},Z{1},Z{2},d_x{1},d_x{2},fusion_type,fusion_weight,constant,iteration,filter,d_sol{1}.k);
+            tmp1 = ismember(x,d_x{1});
+            tmp2 = ismember(x,d_x{2});
+            d_sol{1}.x = zf(tmp1);    d_strucObs{1}.Pk = Zf(tmp1,tmp1);
+            d_sol{2}.x = zf(tmp2);    d_strucObs{2}.Pk = Zf(tmp2,tmp2);
         end
     end
     for i = 1:tur
@@ -155,39 +238,6 @@ while d_sol{1}.k < d_Wp{1}.sim.NN
         % Display animations on screen
         [d_hFigs{i},d_scriptOptions{i}] = d_WFObs_s_animations(d_Wp{i},d_sol_array{i},d_sys{i},LESData,d_scriptOptions{i},d_strucObs{i},d_hFigs{i});
     end
-%     Nx = d_Wp{1}.actualmesh.Nx;
-%     Ny = d_Wp{1}.actualmesh.Ny;
-%     u = zeros(Nx,Ny);
-%     v = zeros(Nx,Ny);
-%     for i = 1:Nx
-%         for j = 1:Ny
-%             kk = 0;
-%             kkk = [];
-%             for k = 1:tur
-%                 Nxe = d_Wp{k}.mesh.Nxe;     Nye = d_Wp{k}.mesh.Nye;
-%                 Nxb = d_Wp{k}.mesh.Nxb;     Nyb = d_Wp{k}.mesh.Nyb;
-%                 if ( ( Nxb<=i )&&( i<=Nxe ) )...
-%                         &&( ( Nyb<=j )&&( j<=Nye ) )
-%                     d_sol_array{k}(d_sol{1}.k).u(i-Nxb+1,j-Nyb+1);
-%                     u(i,j) = u(i,j) + d_sol_array{k}(d_sol{1}.k).u(i-Nxb+1,j-Nyb+1);
-%                     v(i,j) = v(i,j) + d_sol_array{k}(d_sol{1}.k).v(i-Nxb+1,j-Nyb+1);
-%                     kk = kk + 1;
-%                     kkk = [kkk,k];
-%                 end
-%             end
-%             u(i,j) = u(i,j)/kk;
-%             v(i,j) = v(i,j)/kk;
-%             for k = kkk
-%                 Nxe = d_Wp{k}.mesh.Nxe;     Nye = d_Wp{k}.mesh.Nye;
-%                 Nxb = d_Wp{k}.mesh.Nxb;     Nyb = d_Wp{k}.mesh.Nyb;
-%                 d_sol_array{k}(d_sol{1}.k).u(i-Nxb+1,j-Nyb+1) = u(i,j);
-%                 d_sol_array{k}(d_sol{1}.k).v(i-Nxb+1,j-Nyb+1) = v(i,j);                
-%                 d_sol_array{k}(d_sol{1}.k).x = [vec(d_sol_array{k}(d_sol{1}.k).u(3:end-1,2:end-1)'); vec(d_sol_array{k}(d_sol{1}.k).v(2:end-1,3:end-1)')];
-%                 d_sol_array{k}(d_sol{1}.k).x = [d_sol_array{k}(d_sol{1}.k).x; vec(d_sol_array{k}(d_sol{1}.k).p(2:end-1,2:end-1)')];
-%                 d_sol_array{k}(d_sol{1}.k).x = d_sol_array{k}(d_sol{1}.k).x(1:end-2);
-%             end
-%         end
-%     end
 end
 
 %% Post-processing

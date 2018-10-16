@@ -54,11 +54,11 @@ clear all; close all; clc;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Parallel Pool
-myCluster = parcluster('local');
-N_pool = myCluster.NumWorkers;
-if isempty(gcp('nocreate')) ~= 0
-    parpool(N_pool);
-end
+% myCluster = parcluster('local');
+% N_pool = myCluster.NumWorkers;
+% if isempty(gcp('nocreate')) ~= 0
+%     parpool(N_pool);
+% end
 
 %% Define script settings
 % Command window reporting settings
@@ -81,11 +81,9 @@ scriptOptions.saveWorkspace     = 1;  % Save complete workspace at the end of si
 scriptOptions.savePath          = ['/Users/Nivas_Kumar/Documents/NivasStudyMaterials/TUDelft/EnKF+WFSim/dWFObs/results/tmp']; % Destination folder of saved files
 
 % Configuration file
-% configName = 'apc_9turb_alm_turb_dexkf_IFAC1DZ';
 % configName = 'apc_9turb_adm_noturb';
-configName = 'axi_2turb_alm_turb';
-% axi_2turb_alm_turb_dexkf_IFAC_1DZ = axi_2turb_alm_turb + dexkf + fusion: IFAC
-% + subsystem_length: 1D + typeCZ: Z
+% configName = 'axi_2turb_alm_turb_DExKF_6D_CIN_turb2';  
+configName = 'axi_2turb_alm_turb';  
 %% Execute the WFObs core code (+ overwrite meshing.m settings, if applicable)
 WpOverwrite = struct(); % Struct to overwrite settings from meshing.m
 WpOverwrite.sim.NN = 500; % Stop after [x] steps

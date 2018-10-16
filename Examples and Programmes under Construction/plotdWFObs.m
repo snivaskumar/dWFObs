@@ -113,7 +113,7 @@ if (scriptOptions.Animate > 0) && (~rem(sol.k,scriptOptions.Animate))
         % Save figures to an external file, if necessary
         if scriptOptions.savePlots
             drawnow;
-            saveas(hFigs{1},[scriptOptions.savePath '/' strucObs.filtertype '_cplot' num2str(sol.k) '.png']);
+            saveas(hFigs{1},[scriptOptions.savePath '/' strucObs.filtertype '_cplot' num2str(sol.k) '.epsc']);
         end
     end
     

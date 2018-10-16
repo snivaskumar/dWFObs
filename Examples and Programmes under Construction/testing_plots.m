@@ -1,9 +1,41 @@
+clear all
+close all
+clc
+
+%d_SIM%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+load('/Users/Nivas_Kumar/Documents/NivasStudyMaterials/TUDelft/EnKF+WFSim/dWFObs_Queue/turb2axialm_4D_SIM_nofus_turb2_uinf11_noest_Qu0p1Qv0p1R0p1/workspace.mat')
+for j = 1:2
+    for i = 1:d_Wp{j}.sim.NN
+        u00{j}(i) = d_sol_array{j}(i).site.u_Inf;
+        RMSE00{j}(i) = d_sol_array{j}(i).score.RMSE_cline;
+        maxError00{j}(i) = d_sol_array{j}(i).score.maxError;
+        RMSE_flow00{j}(i) = d_sol_array{j}(i).score.RMSE_flow;
+        time00{j}(i) = d_sol_array{j}(i).score.CPUtime;
+    end
+    tim00(j) = sum(time00{j})/d_Wp{j}.sim.NN;
+    Wp00{j} = d_Wp{j}; sol_array00{j} = d_sol_array{j}; sys00{j} = d_sys{j};
+    scriptOptions00{j} = d_scriptOptions{j}; strucObs00{j} = d_strucObs{j};
+end
+%d_ExKF%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+load('/Users/Nivas_Kumar/Documents/NivasStudyMaterials/TUDelft/EnKF+WFSim/dWFObs_Queue/turb2axialm_4D_ExKF_nofus_turb2_uinf11_noest_Qu0p1Qv0p1R0p1/workspace.mat')
+for j = 1:2
+    for i = 1:d_Wp{j}.sim.NN
+        u01{j}(i) = d_sol_array{j}(i).site.u_Inf;
+        RMSE01{j}(i) = d_sol_array{j}(i).score.RMSE_cline;
+        maxError01{j}(i) = d_sol_array{j}(i).score.maxError;
+        RMSE_flow01{j}(i) = d_sol_array{j}(i).score.RMSE_flow;
+        time01{j}(i) = d_sol_array{j}(i).score.CPUtime;
+    end
+    tim01(j) = sum(time01{j})/d_Wp{j}.sim.NN;
+    Wp01{j} = d_Wp{j}; sol_array01{j} = d_sol_array{j}; sys01{j} = d_sys{j};
+    scriptOptions01{j} = d_scriptOptions{j}; strucObs01{j} = d_strucObs{j};
+end
 %% U_Inf = Unchanged (SIM, d_ExKF, d_DExKF_2D: IFAC, No Fusion)
 clear all
 close all
 clc
 %SIM%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-load('/Users/Nivas_Kumar/Documents/NivasStudyMaterials/TUDelft/EnKF+WFSim/WFObs_Queue/axi_2turb_alm_turb_sim/workspace.mat')
+load('/Users/Nivas_Kumar/Documents/NivasStudyMaterials/TUDelft/EnKF+WFSim/WFObs_Queue/2Turbine/axi_2turb_alm_turb_sim/workspace.mat')
 for i = 1:Wp.sim.NN
     u0(i) = sol_array(i).site.u_Inf;
     RMSE0(i) = sol_array(i).score.RMSE_cline;

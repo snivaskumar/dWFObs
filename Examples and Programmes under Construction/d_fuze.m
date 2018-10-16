@@ -92,7 +92,8 @@ for i = 1:hr
             Zp(x{i},x{i})       = Zkk1{i};
         end
         if strcmp(typeWeight,'CONSTANT')
-            w = l;
+%             w = l;
+            w = 1/hr;
             Ze(k+1:nn,k+1:nn)   = pinv( (1/w).*C{i} );
         elseif strcmp(typeWeight,'OPTIMAL')
             Ze(k+1:nn,k+1:nn)   = C{i};
@@ -120,7 +121,8 @@ for i = 1:hr
             Zp(x12,x12)       = Zkk1{i}(x2,x2);
         end
         if strcmp(typeWeight,'CONSTANT')
-            w = l;
+%             w = l;
+            w = 1/hr;
             Ze(k+1:nn,k+1:nn)   = inv( (1/w).*C{i}(x2,x2) );
         elseif strcmp(typeWeight,'OPTIMAL')
             Ze(k+1:nn,k+1:nn)   = C{i}(x2,x2);

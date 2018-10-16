@@ -100,12 +100,18 @@ if sol_in.k == 1
         strucObs.Pk    = sparse(eye(strucObs.size_state))*strucObs.P_0;
         strucObs.Htt   = sparse(eye(strucObs.size_state));
         strucObs.Htt   = strucObs.Htt(strucObs.obs_array,:);
-        strucObs.Q_k   = strucObs.Q_k*eye(strucObs.size_state);
+        Qu             = strucObs.Q_e.u*ones(1,Wp.Nu);
+        Qv             = strucObs.Q_e.v*ones(1,Wp.Nv);
+        Qp             = strucObs.Q_e.p*ones(1,Wp.Np);
+        strucObs.Q_k   = [Qu, Qv, Qp].*eye(strucObs.size_state);
     else
         strucObs.Pk    = sparse(eye(strucObs.size_output))*strucObs.P_0;
         strucObs.Htt   = sparse(eye(strucObs.size_output));
         strucObs.Htt   = strucObs.Htt(strucObs.obs_array,:);
-        strucObs.Q_k   = strucObs.Q_k*eye(strucObs.size_output);
+        Qu             = strucObs.Q_e.u*ones(1,Wp.Nu);
+        Qv             = strucObs.Q_e.v*ones(1,Wp.Nv);
+%         Qp             = strucObs.Q_e.p*ones(1,Wp.Np);
+        strucObs.Q_k   = [Qu, Qv].*eye(strucObs.size_output);
     end;
 end;
 Ck          = strucObs.Htt;
