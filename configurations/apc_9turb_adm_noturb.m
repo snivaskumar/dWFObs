@@ -24,15 +24,22 @@ strucObs.noise          = 0.0;
 % strucObs.noise_init     = 1;
 
 % Estimate freestream conditions
-strucObs.U_Inf.estimate  = true;  % Estimate freestream (inflow) u_Inf and v_Inf
-strucObs.U_Inf.intFactor = 0.99;  % LPF gain (1: do not change, 0: instant change)
+strucObs.U_Inf.estimate     = true;  % Estimate freestream (inflow) u_Inf and v_Inf
+strucObs.U_Inf.intFactor    = 0.99;  % LPF gain (1: do not change, 0: instant change)
+scriptOptions.U_Inf         = 'actual'; % 'actual', 5, 11
 
 % Measurement definitions
 strucObs.measPw      = false; % Use power measurements (SCADA) from turbines in estimates
 strucObs.measFlow    = true;  % Use flow measurements (LIDAR) in estimates
 strucObs.sensorsPath = 'sensors_apc_9turb_alm'; % measurement setup filename (see '/setup_sensors/sensors_layouts')
     
-scriptOptions.Turbulence = 0
+scriptOptions.sysLen        = 4;
+scriptOptions.Turbulence    = 2;
+scriptOptions.fusion        = 'yes';
+strucObs.fusionDomain       = 'cin';
+strucObs.fusion_weight      = 'constant';    % IFAC Weight
+strucObs.fusion_CIconstant  = 0.5;
+strucObs.fusion_CIiteration = 5; 
 % Kalman filter settings
 strucObs.filtertype = 'sim'; % Observer types are outlined next
 switch lower(strucObs.filtertype)

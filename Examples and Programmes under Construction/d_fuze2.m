@@ -201,7 +201,7 @@
 %     zf{i} = Zf{i}*zf{i};
 % end
 
-function [zf, Zf, xf] = d_fuze2(z1,z2,Z1,Z2,x1,x2,type,fusion_weight,constant);
+function [zf, Zf, xf] = d_fuze2(z1,z2,Z1,Z2,x1,x2,type,fusion_weight,constant,iteration);
 % [zf, Zf, xf] = fuze2(z1,z2,Z1,Z2,x1,x2,type);
 % type    1 for CI, 2 for EI, 3 for ICI
 
@@ -235,6 +235,11 @@ x2 = T_tmp{2}*x2;
 X_a = T_tmp{1}*Z1*T_tmp{1}';
 X_b = T_tmp{2}*Z2*T_tmp{2}';
 
+% X_a = pinv(X_a);
+% X_b = pinv(X_b);
+% x_a = X_a*x_a;
+% x_b = X_b*x_b;
+
 %%%%%%
 % % Extra
 % x_a(ia{1}) = x_b(ia{1});
@@ -248,6 +253,14 @@ X_b = T_tmp{2}*Z2*T_tmp{2}';
 % X_a(ia{1},ia{1}) = X_b(ia{1},ia{1});
 % X_b(ia{2},ia{2}) = X_a(ia{2},ia{2});
 %%%%%%
+% x1a = x_a;
+% X1a = X_a;
+% x1b = x_b;
+% X1b = X_b;
+% x2a = x_a;
+% X2a = X_a;
+% x2b = x_b;
+% X2b = X_b;
 x1a = x_a(x1~=0);
 X1a = X_a(x1~=0,x1~=0);
 x1b = x_b(x1~=0);
@@ -273,13 +286,14 @@ for i = 1:2
         Zf{i}      = X_a{i} + X_b{i};
         zf{i}      = x_a{i} + x_b{i};
         0;
-    elseif strcmp(type,'CI')
+    elseif strcmp(type,'CI')||strcmp(type,'CI2')
         % CI
         ZA      = X_a{i};
         ZB      = X_b{i};
         f       = @(w) trace( pinv(w*ZA + (1-w)*ZB) ); % arg (min -f) = arg (max f)
         if strcmp(fusion_weight,'OPTIMAL')
-            omega   = fminbnd(f,0,1,optimset('Display','off'));
+            options = optimset('MaxIter',iteration,'Display','off');
+            omega   = fminbnd(f,0,1,options);
         else
             omega   = constant;
         end
@@ -311,14 +325,15 @@ for i = 1:2
         % ICI
         ZA      = X_a{i};
         ZB      = X_b{i};
-% %         ff      = @(w) trace(pinv(ZA + ZB - ZA*pinv(w*ZB + (1-w)*ZA)*ZB)); % min -f = max f
-        ff      = @(w) trace(-(ZA + ZB - ZA*inv(w*ZB + (1-w)*ZA)*ZB)); % min -f = max f
+        ff      = @(w) trace( pinv(ZA + ZB - ZA*pinv(w*ZB + (1-w)*ZA)*ZB) ); % min -f = max f
+%         ff      = @(w) trace(-(ZA + ZB - ZA*inv(w*ZB + (1-w)*ZA)*ZB)); % min -f = max f
         if strcmp(fusion_weight,'OPTIMAL')
-            omega   = fminbnd(ff,0,1,optimset('Display','off'));
+            options = optimset('MaxIter',iteration,'Display','off');
+            omega   = fminbnd(ff,0,1,options);
         else
             omega   = constant;
         end
-        Xij     = ZA*inv(omega*ZB + (1-omega)*ZA)*ZB;
+        Xij     = ZA*pinv(omega*ZB + (1-omega)*ZA)*ZB;
         Zf{i}      = X_a{i} + X_b{i} - Xij;
 
         K = ( X_a{i} - (omega)*Xij )*pinv(Zf{i});
@@ -329,3 +344,9 @@ for i = 1:2
     Zf{i} = pinv(Zf{i});
     zf{i} = Zf{i}*zf{i};
 end
+% xx = zf{1};
+% zf{1} = xx(x1~=0);
+% zf{2} = xx(x2~=0);
+% pp = Zf{1};
+% Zf{1} = pp(x1~=0,x1~=0);
+% Zf{2} = pp(x2~=0,x2~=0);

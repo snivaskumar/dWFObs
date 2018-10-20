@@ -249,6 +249,7 @@ elseif strcmp(type,'CI')
     xtmp = Ptmp*xtmp;
 end
 
+Punest = strucObs.Punest;
 if strcmp(type,'NO FUSION')||strcmp(type,'NO')     %No Fusion
     Pkk             = 5*eye(n,n);
     xkk             = zeros(n,1);

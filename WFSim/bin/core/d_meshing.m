@@ -1,4 +1,4 @@
-function [ Wp ] = d_meshing( scenarioName, plotMesh, PrintGridMismatch, exportPressures, sysLen )
+function [ Wp ] = d_meshing( scenarioName, plotMesh, PrintGridMismatch, exportPressures, sysLen, U_Inf )
 %MESHING Meshing and settings function for the WFSim code
 % This code includes all the topology information, atmospheric
 % information, turbine properties and turbine control settings for any
@@ -326,11 +326,14 @@ for i = 1:tur
         for j = (ID{i})
             plot([Cry(j)-Drotor/2;Cry(j)+Drotor/2],[Crx(j);Crx(j)],'LineWidth',3.0,'DisplayName',['Turbine ' num2str(j)])
             hold on
-            text(Cry(j),Crx(j),['T ' num2str(j)])
+            t = text(Cry(j),Crx(j),['T ' num2str(j)]);
+            t(1).FontSize = 14;
         end;
         axis equal
-        xlim([-0.1*Lyb{i} 1.2*Lye{i}]);
-        ylim([-0.1*Lxb{i} 1.1*Lxe{i}]);
+        xlim([-0.1*Ly 1.2*Ly]);
+        ylim([-0.1*Lx 1.1*Lx]);
+%         xlim([-0.1*Lyb{i} 1.2*Lye{i}]);
+%         ylim([-0.1*Lxb{i} 1.1*Lxe{i}]);
         xlabel('y (m)');
         ylabel('x (m)');
         view(0,90); % view from the top
@@ -388,6 +391,75 @@ for k = 1:tur
     end
 end
 
+% ------------------------------------------------------------------------------------------------------------
+% kk = 0;
+% u = cell(1,tur);
+% for i = 1:tur
+%     % u 
+%     % (3,2):(3,Ny-1); (4,2):(4,Ny-1); (Nx-1,2):(Nx-1,Ny-1)
+%     u{i} = [];
+%     for j = ( Nxb{i}+2 ):( Nxe{i}-1 )               
+%         for k = ( Nyb{i}+1 ):( Nye{i}-1 )
+%             if i == 1
+%                kk = kk + 1; 
+% %                state{i}.x(kk) = j;
+% %                state{i}.y(kk) = k;
+%                 u{i}(j,k) = kk;
+%             else
+%                 tmp = 0;
+%                 for ii = 1:(i-1)
+%                     if ( (Nxb{ii} <= j)&&(j<= (Nxe{ii}-1)) )&&( (Nyb{ii} <= k)&&(k <= (Nye{ii}-1)) )
+%                         u{i}(j,k) = u{ii}(j,k);
+%                     else
+%                         tmp = tmp + 1;
+%                     end
+%                 end
+%                 if tmp == ii
+%                     kk = kk + 1;
+%                     u{i}(j,k) = kk;
+%                 end
+%             end
+%         end
+%     end
+% end
+% v = cell(1,tur);
+% for i = 1:tur
+%     % v 
+%     % (2,3):(2,Ny-1); (3,3):(3,Ny-1); (Nx-1,3):(Nx-1,Ny-1)
+%     v{i} = [];
+%     for j = ( Nxb{i}+1 ):( Nxe{i}-1 )               
+%         for k = ( Nyb{i}+2 ):( Nye{i}-1 )
+%             if i == 1
+%                kk = kk + 1; 
+% %                state{i}.x(kk) = j;
+% %                state{i}.y(kk) = k;
+%                 v{i}(j,k) = kk;
+%             else
+%                 tmp = 0;
+%                 for ii = 1:(i-1)
+%                     if ( (Nxb{ii} <= j)&&(j<= (Nxe{ii}-1)) )&&( (Nyb{ii} <= k)&&(k <= (Nye{ii}-1)) )
+%                         v{i}(j,k) = v{ii}(j,k);
+%                     else
+%                         tmp = tmp + 1;
+%                     end
+%                 end
+%                 if tmp == ii
+%                     kk = kk + 1;
+%                     v{i}(j,k) = kk;
+%                 end
+%             end
+%         end
+%     end
+% end
+% d_x = cell(1,tur);
+% for i = 1:tur
+%     tmp = sort( vec(u{i}) );
+%     d_x{i} = [d_x{i};tmp(tmp ~=0 )];
+%     tmp = sort( vec(v{i}) );
+%     d_x{i} = [d_x{i};tmp(tmp ~=0 )];
+% end
+% ------------------------------------------------------------------------------------------------------------
+
 %% Export to Wp and input
 for i = 1:tur
     N = length(ID{i});
@@ -413,7 +485,8 @@ for i = 1:tur
     Wp{i}.mesh.Nx = Wp{i}.mesh.Nxe - Wp{i}.mesh.Nxb + 1;
     Wp{i}.mesh.Ny = Wp{i}.mesh.Nye - Wp{i}.mesh.Nyb + 1;
     Wp{i}.state = struct('u',u,'v',v,'x_u',x_u,'x_v',x_v,...
-                         'd_u',d_u{i},'d_v',d_v{i},'d_x',d_x{i});
+                         'd_u',d_u{i},'d_v',d_v{i},'d_x',d_x{i}); 
+%     Wp{i}.state = struct('u',u{i},'v',v{i},'d_x',d_x{i});
 	if exportPressures
         Wp{i}.state.p = p;
         Wp{i}.state.x_p = x_p;
@@ -429,8 +502,11 @@ for i = 1:tur
     Wp{i}.turbine.actual_powerscale    = powerscale;
     % Wp{i}.site.lmu                   = 5;
     Wp{i}.site.actual_lmu              = lmu;
-    % Wp{i}.site.u_Inf                 = 5;
-    Wp{i}.site.actual_u_Inf            = u_Inf;
+    if strcmp( upper(U_Inf),'ACTUAL' )
+        Wp{i}.site.actual_u_Inf = u_Inf;
+    else
+        Wp{i}.site.u_Inf = U_Inf;
+    end
     % Wp{i}.site.v_Inf                   = 5;
     Wp{i}.site.actual_v_Inf            = v_Inf;
     
